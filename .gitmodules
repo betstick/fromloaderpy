@@ -1,0 +1,9 @@
+[submodule "lib/umem"]
+	path = lib/umem
+	url = https://github.com/betstick/umem
+[submodule "lib/cmem"]
+	path = lib/cmem
+	url = https://github.com/betstick/cmem
+[submodule "lib/fromloader"]
+	path = lib/fromloader
+	url = https://github.com/betstick/fromloader
