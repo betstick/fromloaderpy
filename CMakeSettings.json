@@ -1,0 +1,15 @@
+{
+	"configurations": [
+		{
+			"name": "x64-Debug-extension",
+			"generator": "Ninja",
+			"configurationType": "Debug",
+			"buildRoot": "${projectDir}\\bin",
+			"installRoot": "${projectDir}\\bin",
+			"cmakeCommandArgs": "",
+			"buildCommandArgs": "",
+			"ctestCommandArgs": "",
+			"inheritEnvironments": [ "msvc_x64_x64" ]
+		}
+	]
+}
