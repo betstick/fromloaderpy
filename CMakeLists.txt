@@ -1,18 +1,46 @@
-cmake_minimum_required(VERSION 3.10)
-
-project(outer-proj)
+cmake_minimum_required(VERSION 3.18)
+project(fromloader)
 
 include(GNUInstallDirs)
 
+find_package(ZLIB REQUIRED)
+include_directories(${ZLIB_INCLUDE_DIR})
+include_directories(${ZLIB_INCLUDE_DIRS})
+
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs REQUIRED)
+
+find_package(PythonExtensions REQUIRED)
+
+execute_process(
+  COMMAND "${PYTHON_EXECUTABLE}"
+  -c "import numpy; print(numpy.get_include())"
+  OUTPUT_VARIABLE NumPy_INCLUDE_DIRS
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+# F2PY headers
+execute_process(
+  COMMAND "${PYTHON_EXECUTABLE}"
+  -c "import numpy.f2py; print(numpy.f2py.get_include())"
+  OUTPUT_VARIABLE F2PY_INCLUDE_DIR
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 
 if(WIN32)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++20 /Zc:strictStrings- ")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /std:c++20 /Zc:strictStrings- ")
 else()
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wl,--no-as-needed")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -Wl,--no-as-needed")
+endif()
+
+if(MSVC)
+	if(BUILD STREQUAL "release")
+		set(VCPKG_BUILD_TYPE release)
+	else()
+		set(VCPKG_BUILD_TYPE debug)
+	endif()
 endif()
 
 if(NOT BUILD)
@@ -55,12 +83,32 @@ else()
 	message(STATUS "Using debug mode...")
 endif()
 
-set(CMAKE_BINARY_DIR bin/)
-
 add_subdirectory(lib/cmem/)
 add_subdirectory(lib/umem/)
 add_subdirectory(lib/fromloader/)
 
-add_subdirectory(src/)
+set(SOURCES
+	#module.cpp
+	fromloader/_fromloader.cpp
+	fromloader/flver2/flver2.cpp
+	#flver2/bone/bone.cpp
+	fromloader/mtd/mtd.cpp
+)
+
+add_library(_fromloader MODULE ${SOURCES})
+
+target_link_libraries(_fromloader frld umem cmem ZLIB::ZLIB)
+
+target_include_directories(_fromloader PUBLIC
+	${NumPy_INCLUDE_DIRS}
+	${PYTHON_INCLUDE_DIRS}
+	cmem
+	umem
+	frld
+)
+
+python_extension_module(_fromloader)
+
+install(TARGETS _fromloader DESTINATION fromloader)
 
 unset(CMAKE_BUILD_TYPE CACHE)
