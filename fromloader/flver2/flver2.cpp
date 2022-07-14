@@ -46,7 +46,8 @@ std::vector<FixedBone> fixBones(cfr::FLVER2::Bone* boneArr, int boneCount)
 
 int flverInit(flverObject* self, PyObject* args, PyObject* kwds)
 {
-	static char* kwlist[] = {"filepath",NULL};
+	static char* kwlist[2] = {"filepath",NULL};
+
 	const char* c_filePath = NULL;
 
 	if(!PyArg_ParseTupleAndKeywords(args,kwds,"s:__init__",kwlist,&c_filePath))
@@ -234,41 +235,40 @@ PyObject* flverGetFaceset(flverObject* self, PyObject *args)
 	if(mesh_i > self->asset->header.meshCount - 1)
 	{
 		printf("INVALID MESH INDEX!\n");
+		return NULL;
 	}
-	else
+	
+	uint64_t lowest_flags = LLONG_MAX;
+	
+	for(int mfsi = 0; mfsi < meshp.header.facesetCount; mfsi++)
 	{
-		uint64_t lowest_flags = LLONG_MAX;
-		
-		for(int mfsi = 0; mfsi < meshp.header.facesetCount; mfsi++)
+		int fsindex = meshp.facesetIndices[mfsi];
+		if(self->asset->facesets[fsindex].header.flags < lowest_flags)
 		{
-			int fsindex = meshp.facesetIndices[mfsi];
-			if(self->asset->facesets[fsindex].header.flags < lowest_flags)
-			{
-				facesetp = &self->asset->facesets[fsindex];
-				lowest_flags = facesetp->header.flags;
-			}
+			facesetp = &self->asset->facesets[fsindex];
+			lowest_flags = facesetp->header.flags;
 		}
+	}
 
-		if(facesetp == nullptr)
-		{
-			printf("mesh_index:%i\n",mesh_i);
-			printf("ARGH WE BE AT A NULL POINTER! ARGAGHAHGHAHG!\n");
-		}
+	if(facesetp == nullptr)
+	{
+		printf("mesh_index:%i\n",mesh_i);
+		printf("ARGH WE BE AT A NULL POINTER! ARGAGHAHGHAHG!\n");
+	}
 
-		facesetp->triangulate();
-		//printf("triangulated %i tris\n",faceset->triCount);
+	facesetp->triangulate();
+	//printf("triangulated %i tris\n",faceset->triCount);
 
-		npy_intp dim[2];
-		dim[0] = facesetp->triCount / 3;
-		dim[1] = 3;
+	npy_intp dim[2];
+	dim[0] = facesetp->triCount / 3;
+	dim[1] = 3;
 
-		PyObject* nparr = PyArray_SimpleNewFromData(
-			2,dim,NPY_INT32,&facesetp->triList[0]
-		);
-		Py_IncRef(nparr);
+	PyObject* nparr = PyArray_SimpleNewFromData(
+		2,dim,NPY_INT32,&facesetp->triList[0]
+	);
+	Py_IncRef(nparr);
 
-		return nparr;
-	}	
+	return nparr;
 };
 
 //returns list of nparrys

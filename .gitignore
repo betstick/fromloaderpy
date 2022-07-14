@@ -40,3 +40,4 @@ __pycache__/*
 _skbuild
 _skbuild/
 _skbuild/*
+*.mtd

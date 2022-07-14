@@ -7,11 +7,14 @@ find_package(ZLIB REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIR})
 include_directories(${ZLIB_INCLUDE_DIRS})
 
+find_package(ICU COMPONENTS uc i18n REQUIRED)
+
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs REQUIRED)
 
 find_package(PythonExtensions REQUIRED)
 
+#grab numpy stufff
 execute_process(
   COMMAND "${PYTHON_EXECUTABLE}"
   -c "import numpy; print(numpy.get_include())"
@@ -70,8 +73,8 @@ else()
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /std:c++20 /Zc:strictStrings- /O0")
 	else()
 		#enable GDB and disable all optimizations
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -O0 -g")
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb -O0 -g")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -O0 -Wno-conversion-null -Wno-write-strings")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb -O0 -Wno-conversion-null -Wno-write-strings")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -fmax-errors=8")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -fmax-errors=8")
 	endif()
@@ -97,7 +100,7 @@ set(SOURCES
 
 add_library(_fromloader MODULE ${SOURCES})
 
-target_link_libraries(_fromloader frld umem cmem ZLIB::ZLIB)
+target_link_libraries(_fromloader frld umem cmem ZLIB::ZLIB ICU::uc)
 
 target_include_directories(_fromloader PUBLIC
 	${NumPy_INCLUDE_DIRS}
