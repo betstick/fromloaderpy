@@ -7,8 +7,6 @@ find_package(ZLIB REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIR})
 include_directories(${ZLIB_INCLUDE_DIRS})
 
-find_package(ICU COMPONENTS uc i18n REQUIRED)
-
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs REQUIRED)
 
@@ -94,13 +92,14 @@ set(SOURCES
 	#module.cpp
 	fromloader/_fromloader.cpp
 	fromloader/flver2/flver2.cpp
+	fromloader/util/util.cpp
 	#flver2/bone/bone.cpp
 	fromloader/mtd/mtd.cpp
 )
 
 add_library(_fromloader MODULE ${SOURCES})
 
-target_link_libraries(_fromloader frld umem cmem ZLIB::ZLIB ICU::uc)
+target_link_libraries(_fromloader frld umem cmem ZLIB::ZLIB)
 
 target_include_directories(_fromloader PUBLIC
 	${NumPy_INCLUDE_DIRS}

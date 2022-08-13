@@ -4,15 +4,13 @@
 typedef struct
 {
 	PyObject_HEAD
-	cfr::MTD* asset;
-	PyObject* filePath;
+	//cfr::MTD* asset;
 	PyObject* params;
-	int paramCount;
+	//int paramCount;
 } mtdObject;
 
 //members to expose to python
 static PyMemberDef mtdMembers[] = {
-	{"filepath", T_STRING, offsetof(mtdObject, filePath), READONLY, "file path"},
 	{"params", T_OBJECT, offsetof(mtdObject, params), READONLY, "params"},
 	{NULL}
 };
@@ -24,12 +22,12 @@ PyObject* mtdNew(PyTypeObject* type, PyObject* args, PyObject* kwds);
 int mtdInit(mtdObject* self, PyObject* args, PyObject* kwds);
 
 static PyMethodDef mtdMethods[] = {
-	{NULL, NULL, 0, NULL}
+	{NULL, NULL, 0, NULL},
 };
 
 static PyTypeObject mtdType = {
 	PyVarObject_HEAD_INIT(NULL, 0)
-	"fromloader.MTD",							/*tp_name*/
+	"fromloader.mtd",							/*tp_name*/
 	sizeof(mtdObject),							/*tp_basicsize*/
 	0,                                          /*tp_itemsize*/
 	(destructor)mtdDealloc,						/*tp_dealloc*/

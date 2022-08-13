@@ -7,14 +7,21 @@ typedef struct
 	cfr::FLVER2* asset;
 	PyObject* filePath;
 	PyObject* materialList;
+	PyObject* meshList;
 	//PyObject* mtdList;
 	//PyObject* textureList;
-
 	//bones are just gonna be a sucky stupid list of lists.
 	//deal with it. i don't care anymore. there's no labels.
 	PyObject* boneList;
+	PyObject* dummyList;
+	PyObject* facesetList;
+	PyObject* vertexBufferList;
+	PyObject* normalFacesList;
+
 	int boneCount;
 	int meshCount;
+	int materialCount;
+	int dummyCount;
 } flverObject;
 
 //members to expose to python
@@ -23,14 +30,22 @@ static PyMemberDef flverMembers[] = {
 	//{"mtds", T_OBJECT, offsetof(flverObject, mtdList), READONLY, "mtd names"},
 	//{"textures", T_OBJECT, offsetof(flverObject, textureList), READONLY, "tex list"},
 	{"materials", T_OBJECT, offsetof(flverObject, materialList), READONLY, "mats"},
+	{"meshes", T_OBJECT, offsetof(flverObject, meshList), READONLY, "meshes"},
 	{"bones", T_OBJECT, offsetof(flverObject, boneList), READONLY, "bones"},
-	{"meshcount", T_INT, offsetof(flverObject, meshCount), READONLY, "meshcount"},
-	{"bonecount", T_INT, offsetof(flverObject, boneCount), READONLY, "bonecount"},
+	{"dummies", T_OBJECT, offsetof(flverObject, dummyList), READONLY, "dummies"},
+	{"facesets", T_OBJECT, offsetof(flverObject, facesetList), READONLY, "facesets"},
+	{"vertex_buffers", T_OBJECT, offsetof(flverObject, vertexBufferList), READONLY, "vert buffers"},
+	{"face_normals", T_OBJECT, offsetof(flverObject, normalFacesList), READONLY, "faceset ordered norms"},
+
+	{"material_count", T_INT, offsetof(flverObject, materialCount), READONLY, "materialcount"},
+	{"mesh_count", T_INT, offsetof(flverObject, meshCount), READONLY, "meshcount"},
+	{"bone_count", T_INT, offsetof(flverObject, boneCount), READONLY, "bonecount"},
+	{"dummy_count", T_INT, offsetof(flverObject, dummyCount), READONLY, "dummyCount"},
 	{NULL}
 };
 
 //internal
-void flverDealloc (flverObject* self);
+void flverDealloc(flverObject* self);
 
 PyObject* flverNew(PyTypeObject* type, PyObject* args, PyObject* kwds);
 
@@ -45,9 +60,15 @@ PyObject* flverGetVertDataOrdered(flverObject* self, PyObject *args);
 
 PyObject* flverGenerateArmature(flverObject* self, PyObject * args);
 
+PyObject* flverGenerateMesh(flverObject* self, PyObject * args);
+
+int flverClose(flverObject* self, PyObject * args);
+
 static PyMethodDef flverMethods[] = {
 	{"get_faceset", (PyCFunction) flverGetFaceset, METH_VARARGS, "Returns tris for faces"},
 	{"get_vertex_data", (PyCFunction) flverGetVertData, METH_VARARGS, "Returns all vertex data"},
+	{"close", (PyCFunction) flverClose, METH_NOARGS, "Closes the FLVER2 and cleans up"},
+	{"generate_mesh", (PyCFunction) flverGenerateMesh, METH_VARARGS, "generates a mesh based on index"},
 	//{"get_vertex_data_ordered", (PyCFunction) flverGetVertDataOrdered, METH_VARARGS, "Returns all vertex data"},
 	//{"export_gltf", (PyCFunction) flverExportGLTF, METH_NOARGS, "Returns all vertex data"},
 	{NULL, NULL, 0, NULL}
@@ -56,7 +77,7 @@ static PyMethodDef flverMethods[] = {
 //boiler plate junk
 static PyTypeObject flverType = {
 	PyVarObject_HEAD_INIT(NULL, 0)
-	"fromloader.Flver",							/*tp_name*/
+	"fromloader.flver2",						/*tp_name*/
 	sizeof(flverObject),						/*tp_basicsize*/
 	0,                                          /*tp_itemsize*/
 	(destructor)flverDealloc,					/*tp_dealloc*/

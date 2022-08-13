@@ -5,6 +5,8 @@
 PyMethodDef fromloaderMethods[] = {
 	flverMethods[0],
 	flverMethods[1],
+	flverMethods[3],
+	utilMethods[0],
 	//flverMethods[2],
 	//mtdMethods[0],
 	//{"get_faceset", (PyCFunction) flverGetFaceset, METH_VARARGS, "Returns tris for faces"},
@@ -37,6 +39,9 @@ PyInit__fromloader(void)
 	if (PyType_Ready(&mtdType) < 0)
 		return NULL;
 	
+	if (PyType_Ready(&utilType) < 0)
+		return NULL;
+	
 	/*if (PyType_Ready(&boneType) < 0)
 		return NULL;*/
 	
@@ -62,6 +67,14 @@ PyInit__fromloader(void)
 	if (PyModule_AddObject(module, "mtd", (PyObject*) &mtdType) < 0)
 	{
 		Py_DECREF(&mtdType);
+		Py_DECREF(module);
+		return NULL;
+	}
+
+	Py_INCREF(&utilType);
+	if (PyModule_AddObject(module, "util", (PyObject*) &utilType) < 0)
+	{
+		Py_DECREF(&utilType);
 		Py_DECREF(module);
 		return NULL;
 	}
